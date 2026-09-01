@@ -6,9 +6,10 @@ GEMINI_API_KEY 환경변수(.env)로 설정한다.
 import json
 import os
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-2.5-flash"
 
 PROMPT_TEMPLATE = """너는 보험 전문 블로거야. 아래 주제로 네이버 블로그 글을 써줘.
 
@@ -34,12 +35,12 @@ def generate_post(topic: str) -> dict:
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY 환경변수가 설정되어 있지 않습니다 (.env 확인).")
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(MODEL_NAME)
+    client = genai.Client(api_key=api_key)
 
-    response = model.generate_content(
-        PROMPT_TEMPLATE.format(topic=topic),
-        generation_config={"response_mime_type": "application/json"},
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=PROMPT_TEMPLATE.format(topic=topic),
+        config=types.GenerateContentConfig(response_mime_type="application/json"),
     )
     data = json.loads(response.text)
 
